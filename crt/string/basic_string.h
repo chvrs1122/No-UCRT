@@ -7,7 +7,7 @@
 #include "string_view.h"
 #include "../core/utility.h"
 #include "../functional/hash.h"
-#include "../../memory/heap/heap.h"
+#include <memory/heap/heap.h>
 
 namespace std
 {

@@ -3,7 +3,7 @@
 #include "../core/common.h"
 #include "../core/memory.h"
 #include "../core/utility.h"
-#include "../../memory/heap/heap.h"
+#include <memory/heap/heap.h>
 
 namespace std
 {
