@@ -1,0 +1,22 @@
+#pragma once
+
+#include "core/common.h"
+#include "core/type_traits.h"
+#include "core/utility.h"
+#include "core/initializer_list.h"
+#include "core/memory.h"
+#include "string/string.h"
+#include "string/wstring.h"
+#include "string/string_view.h"
+#include "string/basic_string.h"
+#include "functional/hash.h"
+#include "math/math.h"
+#include "io/printf.h"
+#include "containers/array.h"
+#include "containers/span.h"
+#include <tuple>
+#include "util/optional.h"
+#include "util/variant.h"
+#include "functional/function.h"
+#include "containers/vector.h"
+#include "algo/algorithm.h"
