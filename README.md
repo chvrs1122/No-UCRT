@@ -1,5 +1,7 @@
 # No-UCRT
 A C++ library for Windows x64 that removes all CRT dependencies.
+
+Feel free to contribute !
  
 ## Features
 **Memory**
@@ -15,12 +17,14 @@ A C++ library for Windows x64 that removes all CRT dependencies.
 - `optional`: holds a value or nothing
 - `variant`: tagged union, type-safe get
 - `function`: type-erased callable with small-object optimization
-- `hash`: FNV-1a 64-bit, specializations for int, uint, long long, pointer, string
+- `hash`: FNV-1a 64-bit for int, uint, long long, pointer, string
+- `unordered_map`: hash map, insert, find, contains, erase, operator[]
+- `addressof`: returns the actual address of an object
 - `sort`, `find`, `find_if`, `min`, `max`, `clamp`: algorithm helpers
 - `sqrt`, `sin`, `cos`, `tan`, `atan2`, `pow`, `abs`, `isfinite`: math
 - `printf`: WriteConsoleA output, `%d/%u/%x/%X/%p/%s/%c/%f`, width, zero-pad, precision, `%ll`/`%z`
 
-## Usage
+## Example
 ```cpp
 #define NOMINMAX
 #include <windows.h>
@@ -30,8 +34,11 @@ A C++ library for Windows x64 that removes all CRT dependencies.
 
 int main()
 {
-    Syscall::Init();  // must come before Heap::Init
-    Heap::Init();
+    if (!NoUCRT::Initialize()) {
+        // handle
+
+        return false;
+    }
 
     std::vector<int> vector;
     vector.push_back(1);
@@ -45,9 +52,44 @@ int main()
 }
 ```
 
+## Building
+```
+build.cmd
+```
+
+Compiler flags used:
+```
+clang-cl /nologo /c /O2 /GS- /Gs9999999 /GR- /Gy /Zl /Brepro
+    /std:c++latest
+    /guard:cf- /EHs-c- /Zc:threadSafeInit-
+    /clang:-fno-builtin /clang:-flto=thin
+    /I . /D_CRT_SECURE_NO_WARNINGS /DWIN32_LEAN_AND_MEAN /D_NO_CRT_STDIO_INLINE
+```
+
+Linker flags used:
+```
+lld-link /NOLOGO /NODEFAULTLIB /ENTRY:main /SUBSYSTEM:CONSOLE
+    /GUARD:NO /Brepro /OPT:REF /OPT:ICF
+    kernel32.lib
+```
+
+Compile Flags
+```
+-x
+c++
+-I.
+-std=c++23
+-DWIN32_LEAN_AND_MEAN
+-D_CRT_SECURE_NO_WARNINGS
+-D_NO_CRT_STDIO_INLINE
+-DNOMINMAX
+-D_CSTDLIB_
+```
+
 ## Notes
 - `Syscall::Init()` must run before `Heap::Init()`.
-- `printf` outputs to stdout via WriteConsoleA. 
+- `printf` outputs to stdout via WriteConsoleA.
+- Its suggested to implement your own pool allocator
 
 ## Credits
 https://github.com/mludvig/mini-printf
