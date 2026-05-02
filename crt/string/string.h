@@ -235,6 +235,8 @@ namespace std
         return pStr;
     }
 
+// annnd same here msvc conflicts with cstdlib
+#ifndef _CSTDLIB_
     __forceinline int atoi(const char* pStr)
     {
         if (pStr == nullptr)
@@ -274,6 +276,7 @@ namespace std
 
         return iAcc;
     }
+#endif
 
     __forceinline int64_t atoi64(const char* pStr)
     {

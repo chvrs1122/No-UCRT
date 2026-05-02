@@ -2,6 +2,19 @@
 
 #include "../core/common.h"
 
+// hidden one to avoid conflict with MSVC headers
+#if defined(_CSTDLIB_) && !defined(__INTELLISENSE__)
+__forceinline int abs(int iVal)
+{
+    if (iVal < 0)
+    {
+        return -iVal;
+    }
+
+    return iVal;
+}
+#endif
+
 namespace std
 {
     namespace detail
@@ -341,6 +354,8 @@ namespace std
         return (float)std::atan2((double)fY, (double)fX);
     }
 
+// same here msvc conflicts with cstdlib
+#ifndef _CSTDLIB_
     __forceinline int abs(int iVal)
     {
         if (iVal < 0)
@@ -350,6 +365,9 @@ namespace std
 
         return iVal;
     }
+#else
+    using ::abs;
+#endif
 
     __forceinline bool isfinite(double dVal)
     {

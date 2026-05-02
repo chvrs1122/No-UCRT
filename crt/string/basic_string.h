@@ -5,7 +5,7 @@
 #include "string.h"
 #include "wstring.h"
 #include "string_view.h"
-#include "../core/utility.h"
+#include <utility>
 #include "../functional/hash.h"
 #include <memory/heap/heap.h>
 

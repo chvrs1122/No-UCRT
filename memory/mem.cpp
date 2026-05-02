@@ -1,4 +1,3 @@
-#define NOMINMAX
 #include <windows.h>
 #include <winternl.h>
 #include "mem.h"

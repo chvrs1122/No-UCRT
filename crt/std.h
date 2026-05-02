@@ -2,7 +2,7 @@
 
 #include "core/common.h"
 #include "core/type_traits.h"
-#include "core/utility.h"
+#include <utility>
 #include "core/initializer_list.h"
 #include "core/memory.h"
 #include "string/string.h"
@@ -19,4 +19,5 @@
 #include "util/variant.h"
 #include "functional/function.h"
 #include "containers/vector.h"
+#include "containers/unordered_map.h"
 #include "algo/algorithm.h"
