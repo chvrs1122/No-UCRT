@@ -21,3 +21,23 @@
 #include "containers/vector.h"
 #include "containers/unordered_map.h"
 #include "algo/algorithm.h"
+#include "../syscall/syscall.h"
+#include "../memory/heap/heap.h"
+
+namespace NoUCRT
+{
+    [[nodiscard]] inline bool Initialize()
+    {
+        if (!Syscall::Init())
+        {
+            return false;
+        }
+
+        if (!Heap::Init())
+        {
+            return false;
+        }
+
+        return true;
+    }
+}
