@@ -83,7 +83,6 @@ c++
 ```
 
 ## Notes
-- `Syscall::Init()` must run before `Heap::Init()`.
 - `printf` outputs to stdout via WriteConsoleA.
 - Its suggested to implement your own pool allocator
 
