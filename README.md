@@ -53,10 +53,6 @@ int main()
 ```
 
 ## Building
-```
-build.cmd
-```
-
 Compiler flags used:
 ```
 clang-cl /nologo /c /O2 /GS- /Gs9999999 /GR- /Gy /Zl /Brepro
