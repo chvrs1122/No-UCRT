@@ -1,8 +1,8 @@
 #pragma once
 
 #include "std.h"
-#include "../syscall/syscall.h"
-#include "../memory/heap/heap.h"
+#include <syscall/syscall.h>
+#include <memory/heap/heap.h>
 
 namespace NoUCRT
 {
