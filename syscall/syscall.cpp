@@ -54,6 +54,34 @@ bool Syscall::Init()
         return false;
     }
 
+    void* pDelayProc = Memory::FindExport(pNtdll, "NtDelayExecution");
+
+    if (pDelayProc == nullptr)
+    {
+        return false;
+    }
+
+    s_uSsnNtDelayExecution = ExtractSsn(pDelayProc);
+
+    if (s_uSsnNtDelayExecution == 0)
+    {
+        return false;
+    }
+
+    void* pYieldProc = Memory::FindExport(pNtdll, "NtYieldExecution");
+
+    if (pYieldProc == nullptr)
+    {
+        return false;
+    }
+
+    s_uSsnNtYieldExecution = ExtractSsn(pYieldProc);
+
+    if (s_uSsnNtYieldExecution == 0)
+    {
+        return false;
+    }
+
     return true;
 }
 
@@ -68,14 +96,14 @@ static long SyscallNtAllocateVirtualMemory(void* hProcess, void** ppBase, uintpt
     };
 }
 
-bool Syscall::AllocateVirtualMemory(void** ppBase, size_t iSize)
+static __forceinline bool AllocateVirtualMemoryImpl(void** ppBase, size_t iSize)
 {
-    if (s_uSsnNtAllocate == 0)
+    if (Syscall::s_uSsnNtAllocate == 0)
     {
         return false;
     }
 
-    long lStatus = SyscallNtAllocateVirtualMemory((void*)(intptr_t)-1, ppBase, 0, &iSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE, s_uSsnNtAllocate);
+    long lStatus = SyscallNtAllocateVirtualMemory((void*)(intptr_t)-1, ppBase, 0, &iSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE, Syscall::s_uSsnNtAllocate);
 
     if (lStatus < 0 || *ppBase == nullptr)
     {
@@ -83,4 +111,65 @@ bool Syscall::AllocateVirtualMemory(void** ppBase, size_t iSize)
     }
 
     return true;
+}
+
+bool Syscall::AllocateVirtualMemory(void** ppBase, size_t iSize)
+{
+    return AllocateVirtualMemoryImpl(ppBase, iSize);
+}
+
+__attribute__((naked))
+static long SyscallNtDelayExecution(unsigned char bAlertable, long long* pDelay, unsigned int uSsn)
+{
+    __asm {
+        mov r10, rcx
+        mov eax, r8d
+        syscall
+        ret
+    };
+}
+
+static __forceinline bool DelayExecutionImpl(long long iDelayHns)
+{
+    if (Syscall::s_uSsnNtDelayExecution == 0)
+    {
+        return false;
+    }
+
+    long lStatus = SyscallNtDelayExecution(0, &iDelayHns, Syscall::s_uSsnNtDelayExecution);
+
+    return lStatus >= 0;
+}
+
+bool Syscall::DelayExecution(long long iDelayHns)
+{
+    return DelayExecutionImpl(iDelayHns);
+}
+
+__attribute__((naked))
+static long SyscallNtYieldExecution(unsigned int uSsn)
+{
+    __asm {
+        mov r10, rcx
+        mov eax, ecx
+        syscall
+        ret
+    };
+}
+
+static __forceinline bool YieldExecutionImpl()
+{
+    if (Syscall::s_uSsnNtYieldExecution == 0)
+    {
+        return false;
+    }
+
+    long lStatus = SyscallNtYieldExecution(Syscall::s_uSsnNtYieldExecution);
+
+    return lStatus >= 0;
+}
+
+bool Syscall::YieldExecution()
+{
+    return YieldExecutionImpl();
 }

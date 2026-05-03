@@ -7,7 +7,7 @@ Feel free to contribute !
 **Memory**
 - Custom Pool Allocator: set to 8MB
 - Heap: wrapper for `operator new/delete` & `malloc/free`
-- Direct Syscall: extracts SSNs from ntdll stubs at runtime for NtAllocateVirtualMemory
+- Direct Syscall: extracts SSNs from ntdll stubs at runtime for `NtAllocateVirtualMemory`, `NtDelayExecution`, and `NtYieldExecution`
 
 **CRT**
 - `vector`: growable, push_back, erase, copy/move
@@ -23,6 +23,11 @@ Feel free to contribute !
 - `sort`, `find`, `find_if`, `min`, `max`, `clamp`: algorithm helpers
 - `sqrt`, `sin`, `cos`, `tan`, `atan2`, `pow`, `abs`, `isfinite`: math
 - `printf`: WriteConsoleA output, `%d/%u/%x/%X/%p/%s/%c/%f`, width, zero-pad, precision, `%ll`/`%z`
+- `mutex`, `lock_guard`: basic mutual exclusion and scoped locking
+- `once_flag`, `call_once`: run-once initialization across threads
+- `this_thread::yield`: cooperative thread yielding via syscall backend
+- `this_thread::sleep_for`: timed thread sleep via syscall backend
+- `chrono`: `nanoseconds`, `microseconds`, `milliseconds`, `seconds`, `minutes` & `hours`
 
 ## Example
 ```cpp
@@ -53,27 +58,14 @@ int main()
 ```
 
 ## Building
-Compiler flags used:
-```
-clang-cl /nologo /c /O2 /GS- /Gs9999999 /GR- /Gy /Zl /Brepro
-    /std:c++latest
-    /guard:cf- /EHs-c- /Zc:threadSafeInit-
-    /clang:-fno-builtin /clang:-flto=thin
-    /I . /D_CRT_SECURE_NO_WARNINGS /DWIN32_LEAN_AND_MEAN /D_NO_CRT_STDIO_INLINE
-```
-
-Linker flags used:
-```
-lld-link /NOLOGO /NODEFAULTLIB /ENTRY:main /SUBSYSTEM:CONSOLE
-    /GUARD:NO /Brepro /OPT:REF /OPT:ICF
-    kernel32.lib
-```
+To linker flags add: `/NODEFAULTLIB` to ofc exclude msvc's libs
 
 Compile Flags
 ```
+--target=x86_64-pc-windows-msvc
 -x
 c++
--I.
+-Ivendor/no-ucrt
 -std=c++23
 -DWIN32_LEAN_AND_MEAN
 -D_CRT_SECURE_NO_WARNINGS
