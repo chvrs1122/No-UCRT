@@ -7,7 +7,7 @@ Feel free to contribute !
 **Memory**
 - Custom Pool Allocator: set to 8MB
 - Heap: wrapper for `operator new/delete` & `malloc/free`
-- Direct Syscall: extracts SSNs from ntdll stubs at runtime for `NtAllocateVirtualMemory`, `NtDelayExecution`, and `NtYieldExecution`
+- Direct Syscall: extracts SSNs from ntdll stubs at runtime for `NtDelayExecution` and `NtYieldExecution`
 
 **CRT**
 - `vector`: growable, push_back, erase, copy/move

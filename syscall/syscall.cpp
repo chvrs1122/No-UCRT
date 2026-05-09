@@ -1,9 +1,8 @@
-#include <windows.h>
 #include "syscall.h"
 #include "../memory/mem.h"
 #include "../crt/std.h"
 
-static unsigned int ExtractSsn(void* pStub)
+static unsigned int Syscall::ExtractSsn(void* pStub)
 {
     if (pStub == nullptr)
     {
@@ -40,20 +39,6 @@ bool Syscall::Init()
         return false;
     }
 
-    void* pProc = Memory::FindExport(pNtdll, "NtAllocateVirtualMemory");
-
-    if (pProc == nullptr)
-    {
-        return false;
-    }
-
-    s_uSsnNtAllocate = ExtractSsn(pProc);
-
-    if (s_uSsnNtAllocate == 0)
-    {
-        return false;
-    }
-
     void* pDelayProc = Memory::FindExport(pNtdll, "NtDelayExecution");
 
     if (pDelayProc == nullptr)
@@ -83,39 +68,6 @@ bool Syscall::Init()
     }
 
     return true;
-}
-
-__attribute__((naked))
-static long SyscallNtAllocateVirtualMemory(void* hProcess, void** ppBase, uintptr_t uZeroBits, size_t* pSize, unsigned long uType, unsigned long uProt, unsigned int uSsn)
-{
-    __asm {
-        mov r10, rcx
-        mov eax, [rsp + 0x38]
-        syscall
-        ret
-    };
-}
-
-static __forceinline bool AllocateVirtualMemoryImpl(void** ppBase, size_t iSize)
-{
-    if (Syscall::s_uSsnNtAllocate == 0)
-    {
-        return false;
-    }
-
-    long lStatus = SyscallNtAllocateVirtualMemory((void*)(intptr_t)-1, ppBase, 0, &iSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE, Syscall::s_uSsnNtAllocate);
-
-    if (lStatus < 0 || *ppBase == nullptr)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-bool Syscall::AllocateVirtualMemory(void** ppBase, size_t iSize)
-{
-    return AllocateVirtualMemoryImpl(ppBase, iSize);
 }
 
 __attribute__((naked))

@@ -1,11 +1,5 @@
 #include "pool.h"
 #include "../mem.h"
-#include "../../syscall/syscall.h"
-
-static size_t Pool::AlignUp(size_t iSize)
-{
-    return (iSize + BLOCK_ALIGN - 1) & ~(BLOCK_ALIGN - 1);
-}
 
 bool Pool::Init()
 {
@@ -14,18 +8,11 @@ bool Pool::Init()
         return true;
     }
 
-    // ensure syscalls are initialized !!
-    void* pBase = nullptr;
-    size_t iSize = POOL_SIZE;
+    static uint8_t pPoolBuffer[2 * 1024 * 1024]; // 2 MB
 
-    if (!Syscall::AllocateVirtualMemory(&pBase, iSize))
-    {
-        return false;
-    }
-
-    Pool::pPoolBase = (uint8_t*)pBase;
+    Pool::pPoolBase = pPoolBuffer;
     Pool::pPoolBump = Pool::pPoolBase;
-    Pool::pPoolEnd = Pool::pPoolBase + iSize;
+    Pool::pPoolEnd = Pool::pPoolBase + sizeof(pPoolBuffer);
     Pool::pFreeList = nullptr;
 
     return true;
@@ -38,12 +25,13 @@ void* Pool::Alloc(size_t iSize)
         return nullptr;
     }
 
-    size_t iAligned = AlignUp(iSize);
+    size_t iAligned = (iSize + 15) & ~(size_t)15; // 16 byte alignment
     size_t iTotal = sizeof(Pool::BlockHeader) + iAligned;
 
     Pool::BlockHeader* pPrev = nullptr;
     Pool::BlockHeader* pCur = Pool::pFreeList;
 
+    // first fit
     while (pCur != nullptr)
     {
         if (pCur->iTotal >= iTotal)
@@ -57,6 +45,7 @@ void* Pool::Alloc(size_t iSize)
                 Pool::pFreeList = pCur->pNext;
             }
 
+            // return block
             pCur->pNext = nullptr;
             return (void*)((uint8_t*)pCur + sizeof(Pool::BlockHeader));
         }
@@ -65,11 +54,13 @@ void* Pool::Alloc(size_t iSize)
         pCur = pCur->pNext;
     }
 
+    // allocate new block
     if (Pool::pPoolBump + iTotal > Pool::pPoolEnd)
     {
         return nullptr;
     }
 
+    // setup header
     Pool::BlockHeader* pHdr = (Pool::BlockHeader*)Pool::pPoolBump;
     pHdr->iTotal = iTotal;
     pHdr->pNext = nullptr;
@@ -80,11 +71,13 @@ void* Pool::Alloc(size_t iSize)
 
 void Pool::Free(void* pPtr)
 {
+    // ignore invalid pointers
     if (pPtr == nullptr)
     {
         return;
     }
 
+    // free block 
     Pool::BlockHeader* pHdr = (Pool::BlockHeader*)((uint8_t*)pPtr - sizeof(Pool::BlockHeader));
     pHdr->pNext = Pool::pFreeList;
     Pool::pFreeList = pHdr;
