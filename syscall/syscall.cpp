@@ -32,6 +32,7 @@ static unsigned int Syscall::ExtractSsn(void* pStub)
 
 bool Syscall::Init()
 {
+    // get ntdll base
     void* pNtdll = Memory::FindModuleByName("ntdll.dll");
 
     if (pNtdll == nullptr)
@@ -39,6 +40,7 @@ bool Syscall::Init()
         return false;
     }
 
+    // NtDelayExecution
     void* pDelayProc = Memory::FindExport(pNtdll, "NtDelayExecution");
 
     if (pDelayProc == nullptr)
@@ -53,6 +55,7 @@ bool Syscall::Init()
         return false;
     }
 
+    // NtYieldExecution
     void* pYieldProc = Memory::FindExport(pNtdll, "NtYieldExecution");
 
     if (pYieldProc == nullptr)
@@ -81,7 +84,7 @@ static long SyscallNtDelayExecution(unsigned char bAlertable, long long* pDelay,
     };
 }
 
-static __forceinline bool DelayExecutionImpl(long long iDelayHns)
+bool Syscall::DelayExecution(long long iDelayHns)
 {
     if (Syscall::s_uSsnNtDelayExecution == 0)
     {
@@ -91,11 +94,6 @@ static __forceinline bool DelayExecutionImpl(long long iDelayHns)
     long lStatus = SyscallNtDelayExecution(0, &iDelayHns, Syscall::s_uSsnNtDelayExecution);
 
     return lStatus >= 0;
-}
-
-bool Syscall::DelayExecution(long long iDelayHns)
-{
-    return DelayExecutionImpl(iDelayHns);
 }
 
 __attribute__((naked))
@@ -109,7 +107,7 @@ static long SyscallNtYieldExecution(unsigned int uSsn)
     };
 }
 
-static __forceinline bool YieldExecutionImpl()
+bool Syscall::YieldExecution()
 {
     if (Syscall::s_uSsnNtYieldExecution == 0)
     {
@@ -119,9 +117,4 @@ static __forceinline bool YieldExecutionImpl()
     long lStatus = SyscallNtYieldExecution(Syscall::s_uSsnNtYieldExecution);
 
     return lStatus >= 0;
-}
-
-bool Syscall::YieldExecution()
-{
-    return YieldExecutionImpl();
 }
