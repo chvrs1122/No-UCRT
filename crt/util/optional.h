@@ -176,6 +176,16 @@ namespace std
             return *Ptr();
         }
 
+        bool operator==(nullopt_t) const noexcept
+        {
+            return !bHas;
+        }
+
+        bool operator!=(nullopt_t) const noexcept
+        {
+            return bHas;
+        }
+
     private:
         alignas(T) unsigned char tStorage[sizeof(T)];
         bool bHas;
