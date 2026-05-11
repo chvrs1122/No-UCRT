@@ -2,7 +2,7 @@
 
 #include "../core/common.h"
 #include "chrono.h"
-#include "../../syscall/syscall.h"
+#include <syscall/syscall.h>
 
 namespace std
 {

@@ -2,6 +2,10 @@
 
 #include "../core/common.h"
 
+#ifdef _CSTDLIB_
+extern "C" int abs(int);
+#endif
+
 namespace std
 {
     namespace detail
